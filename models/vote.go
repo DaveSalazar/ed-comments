@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//Vote permite controlar que un usuario solo vote una vez
 type Vote struct {
 	gorm.Model
 	CommentID uint `json:"commentId" gorm:"not null"`

@@ -4,6 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+//User crea el modelo de usuario
 type User struct {
 	gorm.Model
 	Username        string    `json:"username" gorm:"not null;unique"`
