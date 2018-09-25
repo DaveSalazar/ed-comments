@@ -43,7 +43,6 @@ func ValidateToken(w http.ResponseWriter, r *http.Request, next http.HandlerFunc
 			}
 		}
 	}
-
 	if token.Valid {
 		ctx := context.WithValue(r.Context(), "user", token.Claims.(*models.Claim).User)
 		next(w, r.WithContext(ctx))
