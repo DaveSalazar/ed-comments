@@ -10,13 +10,23 @@ import (
 	"github.com/DaveSalazar/ed-comments/commons"
 	"github.com/DaveSalazar/ed-comments/configuration"
 	"github.com/DaveSalazar/ed-comments/models"
+	"github.com/olahol/melody"
+	"golang.org/x/net/websocket"
 )
+
+var Melody *melody.Melody
+
+func init() {
+	Melody = melody.New()
+}
 
 //CommentCreate permite registrar un comentario
 func CommentCreate(w http.ResponseWriter, r *http.Request) {
 	comment := models.Comment{}
+	user := models.User{}
 	m := models.Message{}
 
+	user, _ = r.Context().Value("user").(models.User)
 	err := json.NewDecoder(r.Body).Decode(&comment)
 	if err != nil {
 		m.Code = http.StatusBadRequest
@@ -24,6 +34,9 @@ func CommentCreate(w http.ResponseWriter, r *http.Request) {
 		commons.DisplayMessage(w, m)
 		return
 	}
+
+	comment.UserID = user.ID
+
 	db := configuration.GetConnection()
 	defer db.Close()
 
@@ -36,6 +49,29 @@ func CommentCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	db.Model(&comment).Related(&comment.User)
+	comment.User[0].Password = ""
+
+	j, err := json.Marshal(&comment)
+	if err != nil {
+		m.Message = fmt.Sprintf("No se pudo convertir el comentario a json: %s", err)
+		m.Code = http.StatusInternalServerError
+		commons.DisplayMessage(w, m)
+		return
+	}
+
+	origin := fmt.Sprintf("http://loclahost:%d/", commons.Port)
+	url := fmt.Sprintf("ws://localhost:%d/ws", commons.Port)
+
+	ws, err := websocket.Dial(url, "", origin)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if _, err := ws.Write(j); err != nil {
+		log.Fatal(err)
+	}
 	m.Code = http.StatusCreated
 	m.Message = "Comentario creado con exito"
 	commons.DisplayMessage(w, m)
@@ -47,9 +83,9 @@ func CommentGetAll(w http.ResponseWriter, r *http.Request) {
 
 	m := models.Message{}
 	user := models.User{}
-	//vote := models.Vote{}
+	vote := models.Vote{}
 
-	r.Context().Value(&user)
+	user, _ = r.Context().Value("user").(models.User)
 	vars := r.URL.Query()
 
 	db := configuration.GetConnection()
@@ -85,12 +121,12 @@ func CommentGetAll(w http.ResponseWriter, r *http.Request) {
 		vote.UserID = user.ID
 		count := db.Where(&vote).Find(&vote).RowsAffected
 		if count > 0 {
-			if vote.Value{
+			if vote.Value {
 				comments[i].HasVote = 1
-			}else {
+			} else {
 				comments[i].HasVote = -1
 			}
-		} 
+		}
 	}
 
 	j, err := json.Marshal(comments)

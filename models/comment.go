@@ -11,7 +11,7 @@ type Comment struct {
 	ParentID uint      `json:"parentId"`
 	Votes    int32     `json:"votes"`
 	Content  string    `json:"content"`
-	hasVote  int8      `json:"hasVote" gorm:"-"`
+	HasVote  int8      `json:"hasVote" gorm:"-"`
 	User     []User    `json:"user, omitempty"`
 	Children []Comment `json:"children, omitempty"`
 }
