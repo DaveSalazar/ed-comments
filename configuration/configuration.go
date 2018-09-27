@@ -39,7 +39,7 @@ func GetConfiguration() Configuration {
 
 func GetConnection() *gorm.DB {
 	c := GetConfiguration()
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime&loc=Local",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
 		c.User, c.Password, c.Server, c.Port, c.Database)
 	db, err := gorm.Open("mysql", dsn)
 

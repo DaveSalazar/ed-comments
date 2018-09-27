@@ -60,7 +60,7 @@ func CommentCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	origin := fmt.Sprintf("http://loclahost:%d/", commons.Port)
+	origin := fmt.Sprintf("http://localhost:%d/", commons.Port)
 	url := fmt.Sprintf("ws://localhost:%d/ws", commons.Port)
 
 	ws, err := websocket.Dial(url, "", origin)
